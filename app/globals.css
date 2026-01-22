@@ -10,6 +10,11 @@ body {
   background: var(--background);
 }
 
+@theme inline {
+  --font-rubik: "Rubik", sans-serif;
+  --font-main: var(--font-rubik);
+}
+
 /* Custom Animations */
 @layer utilities {
   .animate-fade-in-down {

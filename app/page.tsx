@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { data } from "@/data/schedule"; // Импортируем статические данные
 
 type DateEntry = {
   date: string;
@@ -13,31 +14,15 @@ type Person = {
 };
 
 export default function Home() {
-  const [data, setData] = useState<Person[]>([]);
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<Person | null>(null);
   const [upcomingDates, setUpcomingDates] = useState<DateEntry[]>([]);
-  const [loading, setLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/schedule")
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
 
   // Проверяем, прошла ли сегодняшняя пара (после 18:00)
   const isTodayPassed = () => {
     const now = new Date();
     const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
 
     // Если сейчас 18:00 или позже, считаем что сегодняшняя пара прошла
     return currentHour >= 18;
@@ -137,14 +122,12 @@ export default function Home() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={loading}
             />
             <button
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium px-8 py-2 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium px-8 py-2 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-purple-500/20"
               onClick={handleSearch}
-              disabled={loading}
             >
-              {loading ? "Загрузка..." : "Найти"}
+              Найти
             </button>
           </div>
         </div>
@@ -282,17 +265,4 @@ function isDateToday(dateStr: string) {
 
   const [d, m] = dateStr.split(".").map(Number);
   return d === day && m === month;
-}
-
-// Функция проверки, прошла ли сегодняшняя пара
-function isTodayPassed() {
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-
-  // Проверяем, если сейчас 18:00 или позже
-  if (currentHour > 18) return true;
-  if (currentHour === 18 && currentMinute >= 0) return true;
-
-  return false;
 }
