@@ -120,10 +120,10 @@ export default function Home() {
         {/* Header */}
         <div className="text-center space-y-2 animate-fade-in-down">
           <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-sm">
-            Квота Посещений
+            Симулятор терпения
           </h1>
           <p className="text-slate-400 text-lg">
-            Узнай, сколько еще осталось терпеть
+            Узнай, сколько еще осталось впитывать
           </p>
         </div>
 
