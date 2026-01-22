@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Квота Посещений",
-  description: "Отслеживание обязательных пар и посещаемости",
+  title: "Симулятор терпения",
+  description: "Попробуй дожить до конца",
 };
 
 export default function RootLayout({
