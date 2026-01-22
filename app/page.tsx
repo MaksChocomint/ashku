@@ -83,7 +83,6 @@ export default function Home() {
 
     if (found) {
       setResult(found);
-      // Сразу фильтруем даты
       setUpcomingDates(filterDates(found.dates));
     } else {
       setResult(null);
@@ -96,7 +95,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-[#0f172a] relative overflow-hidden flex flex-col items-center justify-center p-6 text-white font-main selection:bg-purple-500 selection:text-white">
+    <main className="min-h-screen w-full bg-[#0f172a] relative overflow-hidden flex flex-col items-center justify-center p-6 text-white selection:bg-purple-500 selection:text-white">
       {/* Background Gradients */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-600/30 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
