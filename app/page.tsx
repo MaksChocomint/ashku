@@ -73,7 +73,7 @@ export default function Home() {
   const handleSearch = () => {
     if (!query.trim()) return;
 
-    setCookie("last_surname", query.trim(), 30);
+    setCookie("last_surname", query.trim(), 90);
     setHasSearched(true);
     const found = data.find(
       (p) => p.surname.toLowerCase() === query.toLowerCase().trim(),
