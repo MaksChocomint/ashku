@@ -5,7 +5,7 @@ import "./globals.css";
 const rubik = Rubik({
   variable: "--font-rubik",
   subsets: ["latin", "cyrillic", "cyrillic-ext"],
-  adjustFontFallback: false,
+  weight: ["300", "400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body
-        className={`${rubik.variable} antialiased bg-[#0f172a] text-slate-200 min-h-screen selection:bg-purple-500 selection:text-white`}
+        className={`${rubik.variable} font-main antialiased bg-[#0f172a] text-slate-200 min-h-screen selection:bg-purple-500 selection:text-white`}
       >
         {children}
       </body>

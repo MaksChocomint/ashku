@@ -96,7 +96,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen w-full bg-[#0f172a] relative overflow-hidden flex flex-col items-center justify-center p-6 text-white font-sans selection:bg-purple-500 selection:text-white">
+    <main className="min-h-screen w-full bg-[#0f172a] relative overflow-hidden flex flex-col items-center justify-center p-6 text-white font-main selection:bg-purple-500 selection:text-white">
       {/* Background Gradients */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-600/30 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
@@ -160,7 +160,7 @@ export default function Home() {
                 </div>
 
                 {/* Бейдж с общим количеством в базе (опционально) */}
-                <span className="bg-slate-700/50 text-slate-400 px-3 py-1 rounded-full text-xs font-mono border border-slate-600">
+                <span className="bg-slate-700/50 text-slate-400 px-3 py-1 rounded-full text-xs border border-slate-600">
                   Всего в плане: {result.dates.length}
                 </span>
               </div>
@@ -204,7 +204,7 @@ export default function Home() {
                           />
                           <div className="flex flex-col">
                             <span
-                              className={`font-mono text-lg tracking-wide ${
+                              className={`font-main text-lg tracking-wide ${
                                 isToday && !todayPassed
                                   ? "text-green-300 font-bold"
                                   : "text-slate-200"
