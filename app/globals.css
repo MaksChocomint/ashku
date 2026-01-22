@@ -57,8 +57,19 @@ body {
     transform: translateY(0);
   }
 }
+/* Предотвращение скролла страницы на мобильных */
+@media (max-width: 640px) {
+  body {
+    overflow: hidden;
+  }
 
-/* Кастомный скроллбар */
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+/* Кастомный скроллбар для списка */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { data } from "@/data/schedule"; // Импортируем статические данные
 
 type DateEntry = {
@@ -18,6 +18,8 @@ export default function Home() {
   const [result, setResult] = useState<Person | null>(null);
   const [upcomingDates, setUpcomingDates] = useState<DateEntry[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   // Проверяем, прошла ли сегодняшняя пара (после 18:00)
   const isTodayPassed = () => {
@@ -84,6 +86,17 @@ export default function Home() {
     if (found) {
       setResult(found);
       setUpcomingDates(filterDates(found.dates));
+      setIsCompact(true);
+
+      // Прокручиваем к результатам на мобильных
+      setTimeout(() => {
+        if (window.innerWidth < 640 && resultsRef.current) {
+          resultsRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      }, 300);
     } else {
       setResult(null);
       setUpcomingDates([]);
@@ -94,36 +107,57 @@ export default function Home() {
     if (e.key === "Enter") handleSearch();
   };
 
-  return (
-    <main className="min-h-screen w-full bg-[#0f172a] relative overflow-x-hidden flex flex-col items-center justify-start p-4 md:p-6 text-white selection:bg-purple-500 selection:text-white">
-      {/* Background Gradients - уменьшены для мобильных */}
-      <div className="absolute top-[-30%] left-[-30%] w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-purple-600/30 rounded-full blur-[80px] md:blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-30%] right-[-30%] w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-blue-600/20 rounded-full blur-[80px] md:blur-[120px] pointer-events-none" />
+  const handleReset = () => {
+    setQuery("");
+    setResult(null);
+    setUpcomingDates([]);
+    setHasSearched(false);
+    setIsCompact(false);
+  };
 
-      <div className="z-10 w-full max-w-2xl flex flex-col items-center gap-6 md:gap-8 mt-4 md:mt-0">
-        {/* Header */}
-        <div className="text-center space-y-1 md:space-y-2 animate-fade-in-down px-2">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-sm leading-tight">
+  return (
+    <main className="min-h-screen w-full bg-[#0f172a] relative overflow-hidden flex flex-col items-center justify-center p-4 md:p-6 text-white selection:bg-purple-500 selection:text-white">
+      {/* Background Gradients */}
+      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-600/30 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="z-10 w-full max-w-2xl flex flex-col items-center gap-8">
+        {/* Header - анимируется при compact */}
+        <div
+          className={`text-center space-y-2 transition-all duration-500 ${isCompact ? "scale-90 opacity-80 mt-2" : "animate-fade-in-down"}`}
+        >
+          <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 drop-shadow-sm">
             Симулятор терпения
           </h1>
-          <p className="text-slate-400 text-sm sm:text-base md:text-lg">
+          <p className="text-slate-400 text-lg">
             Узнай, сколько еще осталось впитывать
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="w-full relative group animate-fade-in-up delay-100 px-2">
+        {/* Search Bar - всегда большого размера */}
+        <div className="w-full relative group animate-fade-in-up delay-100">
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-500"></div>
-          <div className="relative flex flex-col sm:flex-row bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-xl p-2 sm:p-2 shadow-2xl gap-2 sm:gap-0">
+          <div className="relative flex bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-xl p-2 shadow-2xl">
+            {isCompact && result && (
+              <button
+                onClick={handleReset}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors z-20"
+                aria-label="Вернуться к поиску"
+              >
+                ←
+              </button>
+            )}
             <input
-              className="flex-1 bg-transparent border-none outline-none text-white px-3 sm:px-4 py-2 sm:py-3 placeholder:text-slate-500 text-base sm:text-lg w-full"
+              className={`flex-1 bg-transparent border-none outline-none text-white px-4 py-3 placeholder:text-slate-500 text-lg ${
+                isCompact && result ? "pl-10" : ""
+              }`}
               placeholder="Введите фамилию..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
             />
             <button
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium px-4 sm:px-6 md:px-8 py-2 sm:py-2 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-purple-500/20 text-sm sm:text-base"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium px-8 py-2 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-purple-500/20"
               onClick={handleSearch}
             >
               Найти
@@ -131,52 +165,54 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Results Area */}
-        <div className="w-full min-h-[100px] animate-fade-in-up delay-200 px-2">
+        {/* Results Area - скролл только внутри */}
+        <div
+          ref={resultsRef}
+          className={`w-full transition-all duration-500 ${
+            hasSearched ? "min-h-[400px]" : "min-h-[100px]"
+          }`}
+        >
           {hasSearched && !result && (
-            <div className="p-4 sm:p-6 text-center border border-red-500/30 bg-red-500/10 rounded-2xl backdrop-blur-md">
-              <p className="text-red-400 text-base sm:text-lg font-medium">
+            <div className="animate-fade-in-up p-6 text-center border border-red-500/30 bg-red-500/10 rounded-2xl backdrop-blur-md">
+              <p className="text-red-400 text-lg font-medium">
                 Фамилия не найдена
               </p>
-              <p className="text-slate-400 text-xs sm:text-sm mt-1">
+              <p className="text-slate-400 text-sm mt-1">
                 Возможно, вы уже свободны?
               </p>
             </div>
           )}
 
           {result && (
-            <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl w-full transition-all">
-              <div className="flex flex-col items-start justify-between mb-4 sm:mb-6 border-b border-slate-700/50 pb-3 sm:pb-4 gap-3">
-                <div className="w-full">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1 break-all">
+            <div className="animate-fade-in-up bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-2xl p-6 md:p-8 shadow-2xl w-full transition-all max-h-[70vh] sm:max-h-[600px] flex flex-col">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 border-b border-slate-700/50 pb-4 gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-white mb-1">
                     {result.surname}
                   </h2>
-                  <p className="text-purple-300 font-medium text-xs sm:text-sm md:text-base animate-pulse">
+                  <p className="text-purple-300 font-medium text-sm md:text-base animate-pulse">
                     Тебе осталось терпеть {upcomingDates.length}{" "}
                     {getDeclension(upcomingDates.length)} 💀
                   </p>
                 </div>
 
-                {/* Бейдж с общим количеством в базе */}
-                <div className="w-full flex justify-start">
-                  <span className="bg-slate-700/50 text-slate-400 px-3 py-1 rounded-full text-xs border border-slate-600 self-start">
-                    Всего в плане: {result.dates.length}
-                  </span>
-                </div>
+                <span className="bg-slate-700/50 text-slate-400 px-3 py-1 rounded-full text-xs border border-slate-600">
+                  Всего в плане: {result.dates.length}
+                </span>
               </div>
 
               {upcomingDates.length === 0 ? (
-                <div className="text-center py-6 sm:py-8">
+                <div className="text-center py-8 flex-1 flex flex-col justify-center">
                   <p className="text-2xl mb-2">🎉</p>
-                  <p className="text-green-400 font-bold text-lg sm:text-xl">
+                  <p className="text-green-400 font-bold text-xl">
                     Ты свободен!
                   </p>
-                  <p className="text-slate-500 text-xs sm:text-sm mt-1">
+                  <p className="text-slate-500 text-sm">
                     Больше никаких обязательных посещений.
                   </p>
                 </div>
               ) : (
-                <ul className="grid grid-cols-1 gap-2 sm:gap-3 max-h-[50vh] sm:max-h-[400px] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
+                <ul className="grid grid-cols-1 gap-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                   {upcomingDates.map((d, i) => {
                     // Проверка на "Сегодня" для подсветки
                     const isToday = isDateToday(d.date);
@@ -186,7 +222,7 @@ export default function Home() {
                     return (
                       <li
                         key={i}
-                        className={`group flex flex-col sm:flex-row justify-between items-start sm:items-center px-3 sm:px-5 py-3 sm:py-4 rounded-xl transition-all duration-300 border gap-2 sm:gap-0
+                        className={`group flex justify-between items-center px-5 py-4 rounded-xl transition-all duration-300 border
                           ${
                             isToday && !todayPassed
                               ? "bg-gradient-to-r from-green-900/40 to-slate-900/40 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.15)]"
@@ -194,9 +230,9 @@ export default function Home() {
                           }
                         `}
                       >
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="flex items-center gap-4">
                           <div
-                            className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 ${
+                            className={`w-2.5 h-2.5 rounded-full shrink-0 ${
                               d.subject === "АСОИУ"
                                 ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]"
                                 : "bg-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.6)]"
@@ -204,7 +240,7 @@ export default function Home() {
                           />
                           <div className="flex flex-col">
                             <span
-                              className={`font-mono text-base sm:text-lg tracking-wide ${
+                              className={`font-mono text-lg tracking-wide ${
                                 isToday && !todayPassed
                                   ? "text-green-300 font-bold"
                                   : "text-slate-200"
@@ -213,19 +249,19 @@ export default function Home() {
                               {d.date}
                             </span>
                             {isToday && !todayPassed && (
-                              <span className="text-[10px] uppercase tracking-wider text-green-400 font-bold mt-0.5">
+                              <span className="text-[10px] uppercase tracking-wider text-green-400 font-bold">
                                 Сегодня!
                               </span>
                             )}
                             {isToday && todayPassed && (
-                              <span className="text-[10px] uppercase tracking-wider text-red-400 font-bold mt-0.5">
+                              <span className="text-[10px] uppercase tracking-wider text-red-400 font-bold">
                                 Уже прошло
                               </span>
                             )}
                           </div>
                         </div>
                         <span
-                          className={`font-semibold px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm whitespace-nowrap self-start sm:self-auto ${
+                          className={`font-semibold px-3 py-1 rounded-lg text-xs md:text-sm whitespace-nowrap ${
                             d.subject === "АСОИУ"
                               ? "bg-cyan-500/10 text-cyan-300 border border-cyan-500/20"
                               : "bg-pink-500/10 text-pink-300 border border-pink-500/20"
