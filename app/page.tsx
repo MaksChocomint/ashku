@@ -37,6 +37,7 @@ export default function Home() {
   const [upcomingDates, setUpcomingDates] = useState<DateEntry[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
+
   const filterDates = (dates: DateEntry[]) => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -119,6 +120,7 @@ export default function Home() {
       setIsCompact(true);
     }
   };
+
   useEffect(() => {
     const savedSurname = getCookie("last_surname");
     if (savedSurname) {
@@ -160,13 +162,14 @@ export default function Home() {
               </button>
             )}
             <input
-              className={`flex-1 bg-transparent border-none outline-none text-white px-2.5 sm:px-4 py-2 sm:py-3 placeholder:text-slate-500 text-sm sm:text-base md:text-lg min-w-0 ${
+              className={`flex-1 bg-transparent border-none outline-none text-white px-2.5 sm:px-4 py-2 sm:py-3 placeholder:text-slate-500 text-sm sm:text-base md:text-lg min-w-0 text-[16px] ${
                 isCompact && result ? "pl-7 sm:pl-10" : ""
               }`}
               placeholder="Введите фамилию..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
+              style={{ fontSize: "16px" }} // Дополнительно предотвращаем зум
             />
             <button
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium px-3 sm:px-5 md:px-8 py-1.5 sm:py-2 rounded-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-purple-500/20 text-xs sm:text-sm md:text-base whitespace-nowrap ml-1"
