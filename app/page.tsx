@@ -16,10 +16,7 @@ export default function Home() {
   const [data, setData] = useState<Person[]>([]);
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<Person | null>(null);
-
-  // Состояние для отфильтрованных дат (будущее + сегодня)
   const [upcomingDates, setUpcomingDates] = useState<DateEntry[]>([]);
-
   const [loading, setLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -36,13 +33,26 @@ export default function Home() {
       });
   }, []);
 
-  // Функция для проверки: дата в будущем/сегодня или в прошлом?
+  // Проверяем, прошла ли сегодняшняя пара (после 18:00)
+  const isTodayPassed = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    // Если сейчас 18:00 или позже, считаем что сегодняшняя пара прошла
+    return currentHour >= 18;
+  };
+
+  // Функция для проверки: дата в будущем или сегодня (если пара еще не прошла)
   const filterDates = (dates: DateEntry[]) => {
     const now = new Date();
-    // Сбрасываем время в 00:00:00 для корректного сравнения "сегодня"
+    // Сбрасываем время в 00:00:00 для корректного сравнения дат
     now.setHours(0, 0, 0, 0);
     const currentMonth = now.getMonth(); // 0-11
     const currentYear = now.getFullYear();
+
+    // Проверяем, прошла ли сегодняшняя пара
+    const todayPassed = isTodayPassed();
 
     return dates.filter((item) => {
       const [dayStr, monthStr] = item.date.split(".");
@@ -50,10 +60,6 @@ export default function Home() {
       const month = parseInt(monthStr) - 1; // JS месяцы 0-11
 
       // ОПРЕДЕЛЕНИЕ ГОДА ДЛЯ ДАТЫ ИЗ РАСПИСАНИЯ:
-      // Логика: учебный год обычно идет с Сентября по Июнь.
-      // Если сейчас Сентябрь-Декабрь (8-11), а дата в расписании Январь-Август (0-7), значит это СЛЕДУЮЩИЙ год.
-      // Если сейчас Январь-Август, а дата Сентябрь-Декабрь, значит это ПРОШЛЫЙ год.
-
       let year = currentYear;
 
       // Если сейчас осень/зима (начало уч. года), а пара весной -> это след. год
@@ -67,8 +73,19 @@ export default function Home() {
 
       const itemDate = new Date(year, month, day);
 
-      // Оставляем только те, что больше или равны сегодняшнему дню
-      return itemDate.getTime() >= now.getTime();
+      // Если дата точно в будущем (завтра или позже), оставляем
+      if (itemDate.getTime() > now.getTime()) {
+        return true;
+      }
+
+      // Если дата сегодня
+      if (itemDate.getTime() === now.getTime()) {
+        // Оставляем только если сегодняшняя пара еще не прошла (до 18:00)
+        return !todayPassed;
+      }
+
+      // Если дата в прошлом, не показываем
+      return false;
     });
   };
 
@@ -180,13 +197,15 @@ export default function Home() {
                   {upcomingDates.map((d, i) => {
                     // Проверка на "Сегодня" для подсветки
                     const isToday = isDateToday(d.date);
+                    // Проверяем, прошла ли сегодняшняя пара
+                    const todayPassed = isTodayPassed();
 
                     return (
                       <li
                         key={i}
                         className={`group flex justify-between items-center px-5 py-4 rounded-xl transition-all duration-300 border
                           ${
-                            isToday
+                            isToday && !todayPassed
                               ? "bg-gradient-to-r from-green-900/40 to-slate-900/40 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.15)]"
                               : "bg-slate-900/50 hover:bg-slate-800/80 border-slate-700/50 hover:border-purple-500/50"
                           }
@@ -194,17 +213,30 @@ export default function Home() {
                       >
                         <div className="flex items-center gap-4">
                           <div
-                            className={`w-2.5 h-2.5 rounded-full shrink-0 ${d.subject === "АСОИУ" ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]" : "bg-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.6)]"}`}
+                            className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                              d.subject === "АСОИУ"
+                                ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+                                : "bg-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.6)]"
+                            }`}
                           />
                           <div className="flex flex-col">
                             <span
-                              className={`font-mono text-lg tracking-wide ${isToday ? "text-green-300 font-bold" : "text-slate-200"}`}
+                              className={`font-mono text-lg tracking-wide ${
+                                isToday && !todayPassed
+                                  ? "text-green-300 font-bold"
+                                  : "text-slate-200"
+                              }`}
                             >
                               {d.date}
                             </span>
-                            {isToday && (
+                            {isToday && !todayPassed && (
                               <span className="text-[10px] uppercase tracking-wider text-green-400 font-bold">
                                 Сегодня!
+                              </span>
+                            )}
+                            {isToday && todayPassed && (
+                              <span className="text-[10px] uppercase tracking-wider text-red-400 font-bold">
+                                Уже прошло
                               </span>
                             )}
                           </div>
@@ -248,7 +280,19 @@ function isDateToday(dateStr: string) {
   const day = now.getDate();
   const month = now.getMonth() + 1; // 1-12
 
-  // Добавляем ведущий ноль если нужно для строгого сравнения, или просто парсим числа
   const [d, m] = dateStr.split(".").map(Number);
   return d === day && m === month;
+}
+
+// Функция проверки, прошла ли сегодняшняя пара
+function isTodayPassed() {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
+  // Проверяем, если сейчас 18:00 или позже
+  if (currentHour > 18) return true;
+  if (currentHour === 18 && currentMinute >= 0) return true;
+
+  return false;
 }
